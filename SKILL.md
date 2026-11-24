@@ -93,6 +93,10 @@ anything with personal details. Spot-check one timestamp against the video befor
   and ask the person about Plus instead of retrying.
 - ChatGPT Plus/Pro includes Codex usage with higher limits; no per-task bill.
 - API: small models cost cents per thousand captions/summaries; set a monthly cap first.
+- Model names: "Astra" is OpenAI's GPT-6 Astra (reasoning model, text+image in, text out, no video input).
+  Third-party price guides list it on Plus and up, not Free; API is $10/$50 per 1M in/out tokens. Before
+  switching a job to it, run `codex exec -m gpt-6-astra ...` once: if the free login refuses it, ask the person
+  about Plus instead of retrying.
 
 ## Setup (once per machine)
 - Install: `npm install -g @openai/codex` (or `brew install codex` where Homebrew exists).
@@ -107,6 +111,7 @@ anything with personal details. Spot-check one timestamp against the video befor
 | "I'll drive the ChatGPT app with screenshots" | Each screenshot costs Claude usage; use the CLI. |
 | "Codex output looked fine at a glance" | Spot-check a sample against the done-criteria before using it. |
 | "I'll grab a few frames and guess the rest" | Frames miss the audio and the cuts; send the video to Gemini for a timestamped breakdown. |
+| "A newer model will fix the renders" | Render quality comes from the scene, lighting and the check loop, not from which model writes the Blender script. Switch models only for a clear, tested gain. |
 | "The caption is enough" | Often it is (check it first), but if steps are only shown on screen, run the breakdown. |
 
 ## Lessons
@@ -116,3 +121,7 @@ anything with personal details. Spot-check one timestamp against the video befor
 - 2026-11-23: a TikTok showed giving Claude Code "eyes" with Google's Gemini API CLI: paste a YouTube link, get
   a breakdown by timestamps. Added the "Videos" section. Its full steps were in the caption, read via yt-dlp's
   info JSON in Composio's workbench, which is the cheap first check for any clip.
+- 2026-11-24: an IG reel ("comment ASTRA for the skill") showed a 90s bedroom built and animated in Blender by
+  GPT-6 Astra over Blender MCP, with Tripo for image-to-3D. The gain was the pipeline (reference image, AI mesh
+  generation for props, scripted lighting), not the model; the skill itself was comment-gated. Video breakdowns
+  stay with Gemini because Astra takes no video.
