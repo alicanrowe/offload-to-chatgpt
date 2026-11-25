@@ -1,3 +1,5 @@
+![Offload to ChatGPT: Send bulk and mechanical work to Codex, and videos to Gemini, only when the handoff costs less than the work.](.github/banner.png)
+
 # Offload to ChatGPT
 
 A Claude skill for deciding when a task should go to ChatGPT/Codex (or to Gemini, for watching videos) instead
