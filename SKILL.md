@@ -44,8 +44,15 @@ a file to write; the Queen keeps the long memory and only reads their result fil
   The built-in `Explore` agent is already a cheap read-only searcher. Check the subagent really ran on the
   asked model (some builds ignored the field); if `CLAUDE_CODE_SUBAGENT_MODEL` is set it can override it.
   Outside an agent tool: `claude -p --model haiku "<brief>" > out.md`.
+- **Where Codex and Gemini run:** on the home server ("tower", Windows side, job folder `C:\offload\`), so the
+  owner's laptop stays free. Threads can't reach the tower directly: send the job brief to the coordinator to
+  relay to the tower's thread, with inputs in the job folder and the answer written to a file there. The
+  laptop (via Remote Control) is the fallback when the tower is offline. Setup steps are in the tower-render
+  skill's world; this skill only needs Codex signed in and `GEMINI_API_KEY` set as a user variable there.
 - **Codex:** `codex exec --skip-git-repo-check --full-auto -C <folder> -o <answer.md> "<brief>" </dev/null`
-  on a machine where `codex login status` says "Logged in using ChatGPT" (the owner's Mac, via Remote Control).
+  (on Windows cmd, `< NUL`) on a machine where `codex login status` says "Logged in using ChatGPT".
+  For a headless machine, sign in with `codex login --device-auth`: it prints a URL and a code the owner enters
+  on any device.
   Claude Code's auto mode on the Mac blocks `codex exec` unless a permission rule allows it (`Bash(codex exec:*)`
   in the Mac's Claude Code settings). Claude can't add that rule itself, even with the owner's OK (it would be
   loosening its own permissions): the owner adds it once in `~/.claude/settings.json` under permissions.allow.
