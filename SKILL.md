@@ -73,6 +73,14 @@ prompts: `gemini-api configure --api-key <key>` on a workstation (OS keychain), 
 repo's GitHub Releases. Composio's Gemini instant account can't do this (text-only, and generate-content isn't
 on it), so the person's own key is needed.
 
+**Many videos (a whole channel):** the free tier also caps requests, about 20 per model per day (429
+"GenerateRequestsPerDayPerProjectPerModel-FreeTier"; tested 2026-11-25, it hit after 14 long tutorials). Up to
+10 YouTube links fit in one request, which helps for shorts. For dozens of long tutorials, fetch the captions
+instead (`pip install youtube-transcript-api`, run it in Composio's workbench if YouTube answers a cloud IP with
+"confirm you're not a bot"), turn each transcript into notes with any LLM (Composio's `invoke_llm` in the
+workbench took ~25 s each, 10 in parallel), and keep Gemini video requests for videos with no narration.
+Stop a batch on a daily-quota 429 instead of retrying, and check the fallback model name still exists.
+
 **Limits and privacy:** free tier covers up to 8 hours of YouTube video a day. On the free tier Google may use
 what you send to improve its products, so send public videos only, never private recordings, client material or
 anything with personal details. Spot-check one timestamp against the video before relying on a breakdown.
