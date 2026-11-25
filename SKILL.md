@@ -47,7 +47,8 @@ a file to write; the Queen keeps the long memory and only reads their result fil
 - **Codex:** `codex exec --skip-git-repo-check --full-auto -C <folder> -o <answer.md> "<brief>" </dev/null`
   on a machine where `codex login status` says "Logged in using ChatGPT" (the owner's Mac, via Remote Control).
   Claude Code's auto mode on the Mac blocks `codex exec` unless a permission rule allows it (`Bash(codex exec:*)`
-  in the Mac's Claude Code settings); if it is refused, ask the owner once, don't retry.
+  in the Mac's Claude Code settings). Claude can't add that rule itself, even with the owner's OK (it would be
+  loosening its own permissions): the owner adds it once in `~/.claude/settings.json` under permissions.allow.
   `-o` writes only Codex's final message to the file. Details below.
 - **Gemini (text, files, images, PDFs):** `. <private key file>` then
   `python3 scripts/ask_gemini.py -o answer.md -f input.txt "<brief>"`. It falls back across flash models on
