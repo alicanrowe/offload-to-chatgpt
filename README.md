@@ -10,7 +10,8 @@ The rule at its core: only hand work off when the handoff costs less than the wo
 What it covers:
 
 - A routing table: the Queen Bee (Claude Opus) keeps design and judgement, Scouts (Claude Haiku) do checks,
-  Builders (Claude Sonnet) do routine edits, and the neighbouring hives (Codex CLI and the Gemini API) take
+  Builders (Claude Sonnet) do routine edits, the Drone (a local Qwen model on the home tower, only when its GPU is
+  idle) does free private bulk text, and the neighbouring hives (Codex CLI and the Gemini API) take
   offloaded coding, bulk work, videos and second opinions.
 - Routing rules: route by task type before starting, hand down a brief and get back a file, cascade cheap-first,
   have a different model cross-review, batch calls, and keep private material with Claude.

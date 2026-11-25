@@ -1,6 +1,6 @@
 ---
 name: offload-to-chatgpt
-description: Route every task to the cheapest model that can do it well (the Hive) - Haiku scouts for checks, Sonnet builders for routine edits, Opus as Queen Bee for design and judgement, Codex and Gemini as neighbouring hives for offloaded coding, bulk work, videos and second opinions. Use before starting any task, delegating, or starting a thread.
+description: Route every task to the cheapest model that can do it well (the Hive) - Haiku scouts for checks, Sonnet builders for routine edits, the Drone (local model on the home tower) for free private bulk text when the GPU is idle, Opus as Queen Bee for design and judgement, Codex and Gemini as neighbouring hives for offloaded coding, bulk work, videos and second opinions. Use before starting any task, delegating, or starting a thread.
 ---
 
 # The Hive: route each task to the right model
@@ -16,6 +16,7 @@ when a check fails), and **have a different model review the work than the one t
 | **Queen Bee** | Claude Opus (this thread) | Design, critique, taste, the make-and-check loop, plans, final say on anything the owner sees, skills, memory | Mechanical work it could hand down |
 | **Scouts** | Claude Haiku | Tower/render watching, render QA against a checklist, clipping-report reading, private-data scans, link checks, log triage, file inventories, "did X land" checks | Design calls, anything it would have to judge by taste |
 | **Builders** | Claude Sonnet | Routine edits with a clear spec: page copy swaps, front-matter fixes, renames across files, script fixes with a failing test, README updates | Open-ended design, the final check |
+| **Drone** (home tower) | Local open model on the tower's RTX 4090 via Ollama: `qwen3.8:27b` (big), `qwen3.5:9b` (light) | Free, private, unlimited bulk text work while the GPU is idle: summaries, tagging, captions/alt text drafts, log and transcript triage, file-renaming plans, first drafts, private-data scans of private files (nothing leaves the house) | Anything while a render or CLO/TouchDesigner is running (the gate refuses), design calls, final checks, video (send to Gemini) |
 | **Neighbouring hive: Codex** | OpenAI Codex CLI on the owner's ChatGPT login | Standalone scripts, converters, bulk refactors with a test, data wrangling, a second-opinion code review | Private data, anything needing this project's tools (Drive, GitHub, Blender MCP) |
 | **Neighbouring hive: Gemini** | Gemini API (the owner's key) | Videos (only model that watches them), very long docs/logs (1M context), bulk summaries, a cheap second opinion on a plan or text | Private data (free tier may train on it), final design calls |
 
@@ -59,6 +60,13 @@ a file to write; the Queen keeps the long memory and only reads their result fil
 - **Gemini (text, files, images, PDFs):** `. <private key file>` then
   `python3 scripts/ask_gemini.py -o answer.md -f input.txt "<brief>"`. It falls back across flash models on
   404/429/503 and prints the model, time and tokens. Videos: see "Videos" below.
+- **Drone (tower local model):** on the tower, `python C:\offload\hive\ask_local.py -o answer.md -f input.txt "<brief>"`
+  (`--light` for the 9B, `--think` for harder asks, `--status` to check the gate). It checks the GPU first and
+  exits 3 `GPU_BUSY` if Blender/CLO/TouchDesigner is running or VRAM is short: then cascade to a Haiku scout or
+  Gemini, never wait on or kill a render. Jobs go through the coordinator to the tower's thread like Codex jobs.
+  `gpu_guard.ps1` (hidden task) unloads the model the moment a render app starts; Ollama also unloads it 2 min
+  after the last job, so the card is back to ~0 MB for renders. Setup and checks: `scripts/tower_llm/TOWER_SETUP.md`.
+  Private material may go to the Drone (it never leaves the tower), but its answers still get a Claude check.
 - **Switching the thread's own model** (`switch_model`, effort level) is only on the owner's words. A thread
   started on Opus stays on Opus; save usage by handing work down, not by switching.
 
@@ -189,6 +197,8 @@ anything with personal details. Spot-check one timestamp against the video befor
 | "Codex output looked fine at a glance" | Spot-check a sample against the done-criteria before using it. |
 | "I'll grab a few frames and guess the rest" | Frames miss the audio and the cuts; send the video to Gemini for a timestamped breakdown. |
 | "A newer model will fix the renders" | Render quality comes from the scene, lighting and the check loop, not from which model writes the Blender script. Switch models only for a clear, tested gain. |
+| "The Drone is free, so run it during the render" | Renders always win. The gate and guard exist so a render never fails on VRAM; route to another bee instead. |
+| "A bigger local model would be smarter" | A 70B on one 24 GB card offloads to RAM and crawls, and blocks renders longer. A 27B plus good inputs (search results, the files themselves) beats it, as PewDiePie found. |
 | "The caption is enough" | Often it is (check it first), but if steps are only shown on screen, run the breakdown. |
 
 ## Lessons
@@ -216,3 +226,14 @@ anything with personal details. Spot-check one timestamp against the video befor
   cloud, but a run on the real site flagged every nested url (`/digital/...`) and `/` as invalid: the brief was
   too loose, and only the cross-check caught it. Always run Codex output against real data before using it.
   `codex exec` still prints "Reading additional input from stdin..." with `</dev/null`; that's harmless.
+- 2026-11-25: added the Drone (local model on the home tower) after the owner asked for one and to watch PewDiePie's
+  local-AI videos (STOP. Using AI Right now; I Trained My Own AI; Odysseus launch; the Ajax video), watched through
+  Gemini (`gemini-3-flash-preview`: 3.5/3.6/3.7-flash were at daily quota and 3.8-flash 503). What carried over:
+  a mid-size model plus tools (search, RAG over your own files) beats a huge model ("it's all about the tools you
+  give it"); his own single-card pick in Odysseus's Cookbook is a ~30B-class Qwen at 4-bit on a 24 GB 4090; vLLM
+  only pays off on many GPUs, so one card gets Ollama (easy load/unload); his Ajax is a Qwen3.5-9B fine-tune
+  (de-refused with Heretic) whose weights weren't public when checked, so the light Drone is the same Qwen3.5-9B
+  base and Ajax can drop in later if it ships with a licence. Gemini's breakdowns mixed up facts between videos
+  (called Ajax a JAX library, gave the wrong base model): cross-check names against press coverage before use.
+  Picked `qwen3.8:27b` (Ollama library, 18 GB Q4_K_M, tools + thinking + vision, 256K context) over Gemma 4
+  26B-A4B (faster MoE, weaker on reasoning/code in published numbers) and Qwen3.6 35B-A3B (tighter fit).
