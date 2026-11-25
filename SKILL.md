@@ -204,5 +204,9 @@ anything with personal details. Spot-check one timestamp against the video befor
   are meant to be public: tell scouts what is allowed, they flag strictly); a Sonnet agent rewrote the README in
   10 s; Gemini gave a second-opinion review in 3 s via `scripts/ask_gemini.py` (on gemini-3.5-flash-lite: 3.5-flash
   was at its daily quota and the others 503), and one of its claims was false, hence rule 7. Codex: login and
-  version checked on the Mac, but Claude Code's auto mode on the Mac refused `codex exec` until the owner allows it
-  with a permission rule; Codex also writes its session log to `~/.codex` even in read-only mode.
+  version checked on the Mac; Claude Code's auto mode there refused `codex exec` until the owner added the
+  `Bash(codex exec:*)` allow rule. Then a read-only, stdout-only Codex coding job (script + unittest) took 26 s and
+  ~9.4k tokens on the free ChatGPT login (model gpt-6-luna), no limit message. Its tests passed when run in the
+  cloud, but a run on the real site flagged every nested url (`/digital/...`) and `/` as invalid: the brief was
+  too loose, and only the cross-check caught it. Always run Codex output against real data before using it.
+  `codex exec` still prints "Reading additional input from stdin..." with `</dev/null`; that's harmless.
