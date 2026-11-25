@@ -43,11 +43,14 @@ a video link and wants it understood, summarised or copied as a technique.
   `gemini-api analyze -i "<YouTube link>" "<question>"`. Repeat `-i` for several videos (up to 10 per request).
 - Without the CLI (any machine with `curl` and the key, e.g. a cloud session):
   ```
-  curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" \
+  curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent" \
     -H "x-goog-api-key: $GEMINI_API_KEY" -H "Content-Type: application/json" \
     -d '{"contents":[{"parts":[{"file_data":{"file_uri":"<YouTube link>"}},{"text":"<question>"}]}]}'
   ```
-  The answer is at `candidates[0].content.parts[*].text`.
+  The answer is at `candidates[0].content.parts[*].text`. Models change often: new keys can't use
+  `gemini-2.5-flash` (404), and the newest flash model can return 503 "high demand". On either, list the models
+  (`GET .../v1beta/models`) and try the next flash model down. `gemini-3.5-flash` worked on 2026-11-24.
+  Add `--max-time 120`; a busy model can hang for minutes.
 
 **TikTok, Instagram and other links:** Gemini only takes YouTube links directly. Download the clip in a remote
 sandbox (Composio's workbench: `pip install yt-dlp`, then `yt-dlp -o v.mp4 --write-info-json <link>`), read the
@@ -66,7 +69,7 @@ timestamps, and anything shown on screen but not said."
 
 **Setup (once):** a free key from Google AI Studio (aistudio.google.com/apikey). Keep it out of files and
 prompts: `gemini-api configure --api-key <key>` on a workstation (OS keychain), or an environment secret named
-`GEMINI_API_KEY` for cloud sessions. The CLI installer doesn't verify a checksum; prefer the binary from the
+`GEMINI_API_KEY` for cloud sessions (or a private key file the session sources, never inside a skill folder). The CLI installer doesn't verify a checksum; prefer the binary from the
 repo's GitHub Releases. Composio's Gemini instant account can't do this (text-only, and generate-content isn't
 on it), so the person's own key is needed.
 
@@ -125,3 +128,5 @@ anything with personal details. Spot-check one timestamp against the video befor
   GPT-6 Astra over Blender MCP, with Tripo for image-to-3D. The gain was the pipeline (reference image, AI mesh
   generation for props, scripted lighting), not the model; the skill itself was comment-gated. Video breakdowns
   stay with Gemini because Astra takes no video.
+- 2026-11-24: first live test on a public YouTube link worked with `gemini-3.5-flash` (timestamped answer in
+  ~20 s). `gemini-2.5-flash` was closed to new keys and `gemini-3.8-flash` was overloaded (503).
