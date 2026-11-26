@@ -122,13 +122,19 @@ a video link and wants it understood, summarised or copied as a technique.
   The answer is at `candidates[0].content.parts[*].text`. Models change often: new keys can't use
   `gemini-2.5-flash` (404), and the newest flash model can return 503 "high demand". On either, list the models
   (`GET .../v1beta/models`) and try the next flash model down. `gemini-3.5-flash` worked on 2026-11-24.
-  Add `--max-time 120`; a busy model can hang for minutes.
+  Add `--max-time 120`; a busy model can hang for minutes. Don't stop at the first 503: loop over the flash
+  models newest first and take the first that answers. On 2026-11-26 gemini-3.5/3.6/3.8-flash all returned 503,
+  3.7-flash 429 (free quota), and `gemini-3-flash-preview` answered first try.
 
 **TikTok, Instagram and other links:** Gemini only takes YouTube links directly. Download the clip in a remote
 sandbox (Composio's workbench: `pip install yt-dlp`, then `yt-dlp -o v.mp4 --write-info-json <link>`), read the
 caption from the info JSON (many "how to" clips put the full steps there), and if the picture or speech still
 matters, upload the file through the Gemini Files API and ask the same question. Never use the person's own
 browser or computer to watch media they send.
+- Keep the Gemini key out of the remote sandbox: in the workbench, `upload_local_file('<path>/v.mp4')` returns a
+  short download link; `curl -sL` that link into your own session, then upload to Gemini from there (resumable
+  `POST .../upload/v1beta/files` with `X-Goog-Upload-Protocol: resumable`, then send the returned `file.uri` as
+  `file_data` with `mime_type: video/mp4`; wait ~10 s for it to become ACTIVE).
 
 **The breakdown prompt** (paste as the question, trim to what's needed):
 > Break down this video second by second. 1) The hook: what is said and shown in 0-3 s, and why it stops the
